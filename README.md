@@ -14,6 +14,16 @@ is kept awake by `caffeinate`, Raycast Coffee or Amphetamine.
 
 macOS 13+ and Xcode Command Line Tools (`xcode-select --install`).
 
+## Install
+
+```bash
+curl -fsSL https://raw.githubusercontent.com/aleksandargosevski/matrix-overlay/main/install.sh | zsh
+```
+
+Clones to `~/.local/share/matrix-overlay`, builds, and installs the idle agent (60 s).
+Run the same command again to update. Options via env:
+`MATRIX_IDLE=120` (seconds, `0` = no idle agent), `MATRIX_DIR=~/somewhere`.
+
 ## Usage
 
 ```bash
