@@ -77,7 +77,8 @@ Logs: `$TMPDIR/matrix-overlay.log`.
 
 Add `raycast/` as a Script Directory (Settings → Extensions → + → Add Script Directory):
 
-* **Matrix**: show now, with optional animation dropdown. Assign a hotkey.
+* **Matrix**: show now using the animation from config. Assign a hotkey.
+* **Matrix Rain** / **Matrix Typer**: force a specific animation
 * **Toggle Matrix Idle**: pause/resume the idle agent
 * **Edit Matrix Config**: opens `config.toml` and `typer.txt`
 
