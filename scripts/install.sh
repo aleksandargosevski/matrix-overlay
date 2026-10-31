@@ -1,16 +1,19 @@
 #!/bin/zsh
-# Build + instalira launchd agenta koji pali overlay posle N sekundi neaktivnosti.
-# Upotreba: scripts/install.sh [idle_sekundi] [dodatni argumenti za overlay...]
+# Build, create config (if missing) and install the launchd idle agent.
+# Usage: scripts/install.sh [idle_seconds]   (idle_seconds updates config.toml)
 set -e
 ROOT="${0:A:h:h}"
 LABEL="dev.matrix-overlay.idle"
 PLIST="$HOME/Library/LaunchAgents/$LABEL.plist"
-IDLE="${1:-60}"; shift 2>/dev/null || true
+CONFIG_DIR="${XDG_CONFIG_HOME:-$HOME/.config}/matrix-overlay"
 
 "$ROOT/scripts/build.sh"
+"$ROOT/bin/matrix-overlay" --init-config
 
-EXTRA=""
-for a in "$@"; do EXTRA+="    <string>$a</string>\n"; done
+if [[ -n "$1" ]]; then
+  sed -i '' -E "s/^idle_seconds *=.*/idle_seconds = $1         # idle trigger delay (used by the launchd agent)/" "$CONFIG_DIR/config.toml"
+  echo "idle_seconds = $1"
+fi
 
 mkdir -p "$HOME/Library/LaunchAgents"
 cat > "$PLIST" <<PLIST
@@ -22,8 +25,8 @@ cat > "$PLIST" <<PLIST
   <key>ProgramArguments</key>
   <array>
     <string>$ROOT/bin/matrix-overlay</string>
-    <string>--idle</string><string>$IDLE</string>
-$(printf "$EXTRA")  </array>
+    <string>--daemon</string>
+  </array>
   <key>RunAtLoad</key><true/>
   <key>KeepAlive</key><true/>
   <key>ProcessType</key><string>Interactive</string>
@@ -34,5 +37,9 @@ PLIST
 plutil -lint -s "$PLIST"
 
 launchctl bootout "gui/$(id -u)/$LABEL" 2>/dev/null || true
-launchctl bootstrap "gui/$(id -u)" "$PLIST"
-echo "Installed $LABEL (idle ${IDLE}s)"
+for i in {1..10}; do
+  launchctl bootstrap "gui/$(id -u)" "$PLIST" 2>/dev/null && break
+  sleep 0.5
+done
+launchctl print "gui/$(id -u)/$LABEL" >/dev/null
+echo "Installed $LABEL. Config: $CONFIG_DIR/config.toml"

@@ -1,11 +1,11 @@
 #!/bin/zsh
 # One-line installer:
 #   curl -fsSL https://raw.githubusercontent.com/aleksandargosevski/matrix-overlay/main/install.sh | zsh
-# Env: MATRIX_DIR (default ~/.local/share/matrix-overlay), MATRIX_IDLE (default 60, 0 = no idle agent)
+# Env: MATRIX_DIR (default ~/.local/share/matrix-overlay), MATRIX_IDLE (seconds, sets config; 0 = no idle agent)
 set -e
 REPO="https://github.com/aleksandargosevski/matrix-overlay.git"
 DIR="${MATRIX_DIR:-$HOME/.local/share/matrix-overlay}"
-IDLE="${MATRIX_IDLE:-60}"
+IDLE="${MATRIX_IDLE:-}"
 
 if ! xcode-select -p >/dev/null 2>&1; then
   echo "Xcode Command Line Tools are required. Starting installer..."
@@ -25,6 +25,7 @@ fi
 
 if [[ "$IDLE" == "0" ]]; then
   "$DIR/scripts/build.sh"
+  "$DIR/bin/matrix-overlay" --init-config
 else
   "$DIR/scripts/install.sh" "$IDLE"
 fi
@@ -34,5 +35,6 @@ cat <<MSG
 Done. Last step (Raycast hotkey):
   Raycast → Settings → Extensions → + → Add Script Directory → $DIR/raycast
   then assign a hotkey to "Matrix".
-Test now: $DIR/bin/matrix-overlay
+Config: ${XDG_CONFIG_HOME:-$HOME/.config}/matrix-overlay/config.toml
+Test now: $DIR/bin/matrix-overlay --animation typer
 MSG

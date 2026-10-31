@@ -20,29 +20,66 @@ macOS 13+ and Xcode Command Line Tools (`xcode-select --install`).
 curl -fsSL https://raw.githubusercontent.com/aleksandargosevski/matrix-overlay/main/install.sh | zsh
 ```
 
-Clones to `~/.local/share/matrix-overlay`, builds, and installs the idle agent (60 s).
-Run the same command again to update. Options via env:
-`MATRIX_IDLE=120` (seconds, `0` = no idle agent), `MATRIX_DIR=~/somewhere`.
+Clones to `~/.local/share/matrix-overlay`, builds, creates the config and installs the idle
+agent. Run the same command again to update. Env options: `MATRIX_IDLE=120` (writes
+`idle_seconds`, `0` = no idle agent), `MATRIX_DIR=~/somewhere`.
 
-## Usage
+## Animations
 
-```bash
-scripts/build.sh                 # builds bin/matrix-overlay
-bin/matrix-overlay               # show once, dismiss with any input
-scripts/install.sh 60            # launchd agent: show after 60 s idle
-scripts/install.sh 120 --opacity 0.7 --size 20
-scripts/uninstall.sh
+* **rain**: classic digital rain with katakana, glowing heads and fading trails
+* **typer**: black screen, someone "hand-types" code: uneven rhythm, thinking pauses,
+  auto-indent, typos fixed with backspace, blinking block cursor. The text comes from
+  `typer.txt` (snippets separated by a line containing only `---`). Put in your own
+  pseudo-code, song lyrics, anything.
+* **random**: picks one each time
+
+## Config
+
+`~/.config/matrix-overlay/config.toml` (created on install, hot-reloaded, no restart needed):
+
+```toml
+animation = "random"      # "rain" | "typer" | "random"
+idle_seconds = 60
+media_check = true
+color = "#00ff41"
+opacity = 0.92
+fps = 30
+
+[rain]
+font_size = 16
+
+[typer]
+font = ""                 # empty = SF Mono
+font_size = 18
+text_file = "~/.config/matrix-overlay/typer.txt"
+chars_per_second = 14
+typo_rate = 0.02
+loop = true
+opacity = 1.0
 ```
 
-Options: `--idle <sec>`, `--size <pt>` (default 16), `--opacity <0-1>` (default 0.92),
-`--no-media-check`.
+## CLI
 
-Logs (skipped triggers and reasons): `$TMPDIR/matrix-overlay.log`
+```bash
+bin/matrix-overlay                      # show once, dismiss with any input
+bin/matrix-overlay --animation typer    # override animation
+bin/matrix-overlay --daemon             # idle mode (what the launchd agent runs)
+bin/matrix-overlay --init-config        # create default config + typer.txt if missing
+```
+
+Other overrides: `--idle <sec>`, `--size <pt>`, `--opacity <0-1>`, `--no-media-check`,
+`--config <path>`.
+
+Scripts: `scripts/build.sh`, `scripts/install.sh [idle_seconds]`, `scripts/uninstall.sh`.
+Logs: `$TMPDIR/matrix-overlay.log`.
 
 ## Raycast
 
-Add `raycast/` as a Script Directory (Settings → Extensions → + → Add Script Directory)
-and assign a hotkey to **Matrix**. **Toggle Matrix Idle** pauses/resumes the idle agent.
+Add `raycast/` as a Script Directory (Settings → Extensions → + → Add Script Directory):
+
+* **Matrix**: show now, with optional animation dropdown. Assign a hotkey.
+* **Toggle Matrix Idle**: pause/resume the idle agent
+* **Edit Matrix Config**: opens `config.toml` and `typer.txt`
 
 ## How media detection works
 
